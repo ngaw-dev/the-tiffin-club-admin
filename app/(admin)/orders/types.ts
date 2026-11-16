@@ -70,6 +70,38 @@ export type Paginated<T> = {
   };
 };
 
+export type StatusTransition = { to: OrderStatus; label: string };
+
+/**
+ * Next legal status transition for an Order, branched by Fulfilment
+ * (see docs/adr/0002): pickup orders go confirmed → ready_for_pickup →
+ * completed; delivery orders go confirmed → out_for_delivery → completed.
+ * Returns undefined for terminal or fulfilment-impossible states.
+ */
+export function nextStatusTransition(
+  status: OrderStatus,
+  fulfilment: Fulfilment,
+): StatusTransition | undefined {
+  if (fulfilment === "pickup") {
+    switch (status) {
+      case "confirmed":
+        return { to: "ready_for_pickup", label: "Mark ready for pickup" };
+      case "ready_for_pickup":
+        return { to: "completed", label: "Mark completed" };
+      default:
+        return undefined;
+    }
+  }
+  switch (status) {
+    case "confirmed":
+      return { to: "out_for_delivery", label: "Mark out for delivery" };
+    case "out_for_delivery":
+      return { to: "completed", label: "Mark completed" };
+    default:
+      return undefined;
+  }
+}
+
 export const STATUS_LABELS: Record<OrderStatus, string> = {
   confirmed: "Confirmed",
   ready_for_pickup: "Ready for pickup",

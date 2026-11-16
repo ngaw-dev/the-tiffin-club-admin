@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint:ox": "oxlint",
+    "test": "vitest run",
     "format": "oxfmt",
     "format:check": "oxfmt --check"
   },
@@ -29,7 +30,8 @@
     "oxfmt": "^0.78.0",
     "oxlint": "^1.93.0",
     "tailwindcss": "4.3.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.1.0"
   },
   "packageManager": "pnpm@12.16.1"
 }

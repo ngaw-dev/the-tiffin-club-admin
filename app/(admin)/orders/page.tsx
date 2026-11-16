@@ -25,6 +25,7 @@ import {
   FULFILMENTS,
   ORDER_STATUSES,
   STATUS_LABELS,
+  nextStatusTransition,
   type Order,
   type OrderStatus,
   type Paginated,
@@ -76,6 +77,7 @@ export default function OrdersPage() {
   const [hasNext, setHasNext] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [busyOrderId, setBusyOrderId] = useState<number | null>(null);
 
   const sort = useMemo(() => (sortDesc ? `-${sortKey}` : sortKey), [sortKey, sortKey]);
 
@@ -124,6 +126,21 @@ export default function OrdersPage() {
   }
 
   const sortIndicator = (key: SortKey) => (sortKey === key ? (sortDesc ? " ↓" : " ↑") : "");
+
+  async function advanceStatus(order: Order) {
+    const next = nextStatusTransition(order.status, order.fulfilment);
+    if (!next || busyOrderId === order.id) return;
+    setBusyOrderId(order.id);
+    setError(null);
+    try {
+      await api.patch(`/orders/${order.id}`, { status: next.to });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not update the order status.");
+    } finally {
+      setBusyOrderId(null);
+    }
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -256,6 +273,7 @@ export default function OrdersPage() {
                   <TableHead className="text-right">Paid</TableHead>
                   <TableHead>Fulfilment</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -289,6 +307,25 @@ export default function OrdersPage() {
                       <Badge variant={statusVariant(order.status)}>
                         {STATUS_LABELS[order.status] ?? order.status}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {(() => {
+                        const next = nextStatusTransition(order.status, order.fulfilment);
+                        if (!next) return null;
+                        return (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={busyOrderId === order.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              void advanceStatus(order);
+                            }}
+                          >
+                            {busyOrderId === order.id ? "Updating…" : next.label}
+                          </Button>
+                        );
+                      })()}
                     </TableCell>
                   </TableRow>
                 ))}

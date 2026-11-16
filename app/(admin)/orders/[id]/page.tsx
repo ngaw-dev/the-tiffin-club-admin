@@ -23,7 +23,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { normalizeOrder, STATUS_LABELS, type Order, type OrderStatus } from "../types";
+import {
+  nextStatusTransition,
+  normalizeOrder,
+  STATUS_LABELS,
+  type Order,
+  type OrderStatus,
+} from "../types";
 
 type OrderItem = {
   id?: number;
@@ -51,13 +57,6 @@ function statusVariant(status: OrderStatus) {
       return "outline" as const;
   }
 }
-
-/** One-way lifecycle per admin-api.md; only the next legal move(s) are offered. */
-const NEXT_STATUS: Partial<Record<OrderStatus, { to: OrderStatus; label: string }>> = {
-  confirmed: { to: "ready_for_pickup", label: "Mark ready" },
-  ready_for_pickup: { to: "out_for_delivery", label: "Mark out for delivery" },
-  out_for_delivery: { to: "completed", label: "Mark completed" },
-};
 
 export default function OrderDetailPage() {
   const params = useParams<{ id: string }>();
@@ -108,7 +107,7 @@ export default function OrderDetailPage() {
   const paidSum = order?.paid_sum ?? 0;
   const outstanding = total - paidSum;
   const hasPayments = paidSum > 0;
-  const nextTransition = order ? NEXT_STATUS[order.status] : undefined;
+  const nextTransition = order ? nextStatusTransition(order.status, order.fulfilment) : undefined;
 
   async function changeStatus(next: OrderStatus) {
     if (!order || next === order.status) return;
@@ -192,9 +191,7 @@ export default function OrderDetailPage() {
         <p className="text-sm text-muted-foreground">
           Placed {order.placed_at ? new Date(order.placed_at).toLocaleString() : "—"} ·{" "}
           <span className="capitalize">{order.fulfilment}</span>
-          {order.updated_at
-            ? ` · Updated ${new Date(order.updated_at).toLocaleString()}`
-            : ""}
+          {order.updated_at ? ` · Updated ${new Date(order.updated_at).toLocaleString()}` : ""}
         </p>
       </div>
 

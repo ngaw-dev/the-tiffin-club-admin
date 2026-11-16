@@ -33,7 +33,7 @@ How an Order is handed to the Customer — pickup or delivery. A fixed attribute
 _Avoid_: Fulfillment (US spelling), shipping
 
 **Order Status**:
-The one-way workflow state of an Order: confirmed → ready for pickup → out for delivery → completed, with cancelled reachable from any non-terminal state. Server-enforced and audited.
+The one-way workflow state of an Order, branched by Fulfilment: pickup goes confirmed → ready for pickup → completed; delivery goes confirmed → out for delivery → completed. Cancelled is reachable from any non-terminal state. Server-enforced and audited.
 _Avoid_: Fulfilment (that's pickup vs delivery), order state
 
 **Payment**:

@@ -4,11 +4,11 @@
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Cancelling a fully or partially paid order returns 422
-- [ ] Cancelling an order with zero recorded payments succeeds
-- [ ] Other status transitions on a paid order are unaffected
-- [ ] Tests cover paid and unpaid cancellation paths
+- [x] Cancelling a fully or partially paid order returns 422
+- [x] Cancelling an order with zero recorded payments succeeds
+- [x] Other status transitions on a paid order are unaffected
+- [x] Tests cover paid and unpaid cancellation paths
 
 *Note: work happens in the Laravel API repo (`the-tiffin-club-api`), admin order controller + feature tests.*

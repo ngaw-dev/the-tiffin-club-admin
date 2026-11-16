@@ -4,10 +4,10 @@
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Request containing an unknown key returns 422 and changes nothing
-- [ ] Partial update of known keys still works
-- [ ] Tests cover both paths
+- [x] Request containing an unknown key returns 422 and changes nothing
+- [x] Partial update of known keys still works
+- [x] Tests cover both paths
 
 *Note: work happens in the Laravel API repo (`the-tiffin-club-api`), admin settings controller + feature tests.*

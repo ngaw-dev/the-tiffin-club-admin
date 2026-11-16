@@ -4,10 +4,10 @@
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `DELETE /menus/{id}` with an existing order on the menu returns 409; menu and items remain
-- [ ] Delete succeeds for a menu with no orders
-- [ ] Tests cover both paths
+- [x] `DELETE /menus/{id}` with an existing order on the menu returns 409; menu and items remain
+- [x] Delete succeeds for a menu with no orders
+- [x] Tests cover both paths
 
 *Note: work happens in the Laravel API repo (`the-tiffin-club-api`), admin menu controller + feature tests.*

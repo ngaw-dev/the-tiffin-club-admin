@@ -4,11 +4,11 @@
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Omitted `method` stores `cash`
-- [ ] Explicit `"method": "cash"` stores `cash`
-- [ ] Any other method value returns 422
-- [ ] Tests cover all three paths
+- [x] Omitted `method` stores `cash`
+- [x] Explicit `"method": "cash"` stores `cash`
+- [x] Any other method value returns 422
+- [x] Tests cover all three paths
 
 *Note: work happens in the Laravel API repo (`the-tiffin-club-api`), admin payment controller + feature tests.*

@@ -1,4 +1,4 @@
-# 2. Order Status Lifecycle Is Branched by Fulfilment
+# 3. Order Status Lifecycle Is Branched by Fulfilment
 
 Date: 2026-11-17
 Status: Accepted
@@ -23,9 +23,9 @@ The Order Status workflow branches on the Order's Fulfilment:
 - delivery: confirmed → out_for_delivery → completed
 
 Cancelled remains reachable from any non-terminal status (subject to ADR 0001: no cancellation
-once payments exist). A pickup order can never hold `out_for_delivery`, and a delivery order
-can never hold `ready_for_pickup`; the API guarantees this, so the UI has no fallback path for
-those impossible combinations.
+once payments exist). A pickup order never holds `out_for_delivery` and a delivery order never
+holds `ready_for_pickup`; the API accepts any listed status but the admin UI only ever offers
+the legal next step, so those combinations are never produced.
 
 ## Consequences
 

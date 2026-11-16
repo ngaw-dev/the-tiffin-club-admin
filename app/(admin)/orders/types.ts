@@ -74,7 +74,7 @@ export type StatusTransition = { to: OrderStatus; label: string };
 
 /**
  * Next legal status transition for an Order, branched by Fulfilment
- * (see docs/adr/0002): pickup orders go confirmed → ready_for_pickup →
+ * (see docs/adr/0003): pickup orders go confirmed → ready_for_pickup →
  * completed; delivery orders go confirmed → out_for_delivery → completed.
  * Returns undefined for terminal or fulfilment-impossible states.
  */

@@ -16,9 +16,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
+import { TopBar } from "@/components/layout/top-bar";
 
 const sections = [
   { title: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -75,11 +74,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </SidebarContent>
       </Sidebar>
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
-          <SidebarTrigger className="min-h-11 min-w-11" />
-          <Separator orientation="vertical" className="data-vertical:h-4 data-vertical:self-auto" />
-          <p className="text-sm text-muted-foreground">The Tiffin Club admin</p>
-        </header>
+        <TopBar />
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>

@@ -12,21 +12,27 @@ app. Read it before building UI; append to it after.
 
 ## Design Tokens
 
-shadcn CSS variables (`oklch`), neutral base color, light + dark, mapped
-through `@theme inline` in `app/globals.css` (Tailwind CSS v4 — no
-`tailwind.config.ts`):
+shadcn CSS variables in hex, **light only** (no `.dark` block, no dark
+variant), mapped through `@theme inline` in `app/globals.css` (Tailwind
+CSS v4 — no `tailwind.config.ts`). Values are copied from the storefront's
+`../the-tiffin-club-web/app/globals.css` `:root` — that file is the
+source of truth (its DESIGN.md approximations drift; the CSS wins):
 
-| Token                             | Light              | Dark              | Usage                     |
-| --------------------------------- | ------------------ | ----------------- | ------------------------- |
-| `--background` / `--foreground`   | white / near-black | `#0a0a0a` / light | Page                      |
-| `--primary`                       | near-black         | near-white        | CTAs, active states       |
-| `--secondary` / `--muted`         | neutral 97%        | neutral 27%       | Chips, subtle surfaces    |
-| `--destructive`                   | red                | red               | Errors, destructive acts  |
-| `--border` / `--input` / `--ring` | neutral scale      | neutral scale     | Standard chrome           |
-| `--sidebar-*`                     | neutral scale      | neutral scale     | Admin sidebar (ticket 03) |
-| `--radius`                        | `0.625rem`         | —                 | Radii scale (sm→4xl)      |
+| Token                             | Light      | Usage                     |
+| --------------------------------- | ---------- | ------------------------- |
+| `--background` / `--foreground`   | `#faf7f2` / `#1f1b16` | Page           |
+| `--primary`                       | `#c94a2c`  | CTAs, active states       |
+| `--secondary` / `--muted`         | `#f3eee6` / `#efe9e0` | Chips, subtle surfaces |
+| `--accent`                        | `#2f6f5e`  | Reserved for veg (storefront convention) |
+| `--destructive`                   | `#b42318`  | Errors, destructive acts  |
+| `--border` / `--input` / `--ring` | `#d1d9e0` / `rgba(31,27,22,.16)` / `#c94a2c` | Standard chrome |
+| `--sidebar-*`                     | derived admin-local: sidebar `#f3eee6`, sidebar-border `#e5ddd0`, sidebar-primary `#c94a2c` | Admin sidebar |
+| `--radius`                        | `0.5rem`   | Radii scale (sm→4xl)      |
 
-Typography: Geist Sans (default) / Geist Mono for IDs and codes.
+Typography (skeleton-design trio, loaded via `next/font/google` in
+`app/layout.tsx`): Poppins for headings (`--font-heading`), Source Sans 3
+for body/default (`--font-sans`; renamed from Source Sans Pro), JetBrains
+Mono for IDs and codes (`--font-mono`).
 
 ## Component Source of Truth
 
@@ -54,6 +60,12 @@ primitive + Next `<Link>`/`usePathname` in `components/layout/app-sidebar.tsx`
 — @shadcnblocks application-shell blocks use client-state navigation, not
 routes, so the primitive was composed instead.
 
+**shadcn/ui added (2026-11-16, skeleton re-theme):** avatar, dropdown-menu.
+Shell = sidebar primitive re-skinned to the skeleton app's layout metrics
+(w-64/w-16 collapse, mobile drawer, sticky top bar with search /
+notifications / user menu as static placeholders) in
+`components/layout/top-bar.tsx` + `app-sidebar.tsx`.
+
 ## Decision Log
 
 | Date       | Decision                                                                                                                                            | Rationale                                                                                                 |
@@ -62,3 +74,4 @@ routes, so the primitive was composed instead.
 | 2026-11-16 | shadcn/ui + @shadcnblocks premium blocks as component source of truth (mirrors storefront app)                                                      | Consistency, speed, premium quality                                                                       |
 | 2026-11-16 | Tailwind v4 CSS-variable tokens, neutral base, no `tailwind.config.ts`                                                                              | Tailwind v4 `@theme inline` replaces config file                                                          |
 | 2026-11-16 | Admin shell = shadcn `sidebar` primitive + Next `<Link>` w/ `usePathname` active state; mobile via sidebar's built-in Sheet; nav buttons `min-h-11` | @shadcnblocks shells don't do real routing; primitive composition is the smallest correct fit (ticket 03) |
+| 2026-11-16 | Re-themed to the skeleton app's dashboard design with the storefront terracotta palette, light-only; fonts = skeleton trio (Poppins / Source Sans 3 / JetBrains Mono) via `next/font` | One brand across web + admin; structure/patterns from `ci-cd-project-skeleton-v2/apps/backend`, colors from web `globals.css` (CSS is truth over its DESIGN.md); skeleton's raw gray/indigo classes tokenized rather than ported |

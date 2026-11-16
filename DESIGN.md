@@ -48,6 +48,12 @@ Typography: Geist Sans (default) / Geist Mono for IDs and codes.
 **shadcn/ui installed (2026-11-16):** button, card, table, badge,
 separator.
 
+**shadcn/ui added (2026-11-16, ticket 03):** sidebar (with sheet, tooltip,
+skeleton, input, use-mobile hook). Admin shell composed from the sidebar
+primitive + Next `<Link>`/`usePathname` in `components/layout/app-sidebar.tsx`
+— @shadcnblocks application-shell blocks use client-state navigation, not
+routes, so the primitive was composed instead.
+
 ## Decision Log
 
 | Date       | Decision                                                                                       | Rationale                                                     |
@@ -55,3 +61,4 @@ separator.
 | 2026-11-16 | ESLint/Prettier dropped in favor of oxlint + oxfmt                                             | Faster, fewer deps; matches repo scripts `lint:ox` / `format` |
 | 2026-11-16 | shadcn/ui + @shadcnblocks premium blocks as component source of truth (mirrors storefront app) | Consistency, speed, premium quality                           |
 | 2026-11-16 | Tailwind v4 CSS-variable tokens, neutral base, no `tailwind.config.ts`                         | Tailwind v4 `@theme inline` replaces config file              |
+| 2026-11-16 | Admin shell = shadcn `sidebar` primitive + Next `<Link>` w/ `usePathname` active state; mobile via sidebar's built-in Sheet; nav buttons `min-h-11` | @shadcnblocks shells don't do real routing; primitive composition is the smallest correct fit (ticket 03) |

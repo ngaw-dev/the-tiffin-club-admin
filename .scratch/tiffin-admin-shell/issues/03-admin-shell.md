@@ -6,6 +6,6 @@
 
 **Status:** ready-for-agent
 
-- [ ] Routes `/` (dashboard), `/menu`, `/orders`, `/customers`, `/settings` render
-- [ ] Sidebar highlights the active section, works at mobile and desktop widths
-- [ ] Placeholder pages have real copy, visible focus states, AA contrast
+- [x] Routes `/` (dashboard), `/menu`, `/orders`, `/customers`, `/settings` render
+- [x] Sidebar highlights the active section, works at mobile and desktop widths
+- [x] Placeholder pages have real copy, visible focus states, AA contrast

@@ -24,5 +24,4 @@ that has recorded payments. Corrections happen manually outside the API.
 - The `cancelled` status is reachable only from orders with a zero paid sum.
 - Staff friction in edge cases (pay-then-problem) is accepted deliberately: the scale of the
   business does not justify the complexity and audit risk of mutable money records.
-- Money amounts in responses stay integer cents; requests take dollars. The asymmetry is
-  documented in `admin-api.md`.
+- Money amounts are integer cents everywhere in the admin API — requests and responses alike. (The legacy staff panel's settle form submits dollars; that is legacy-only.)

@@ -12,4 +12,4 @@
 - [x] Re-sending the current status returns 200 and writes no audit entry
 - [x] Tests cover each of the above in the admin API feature test suite
 
-*Note: work happens in the Laravel API repo (`the-tiffin-club-api`), admin controllers + feature tests. Doc reference: `admin-api.md` in `the-tiffin-club-admin`.*
+_Note: work happens in the Laravel API repo (`the-tiffin-club-api`), admin controllers + feature tests. Doc reference: `admin-api.md` in `the-tiffin-club-admin`._

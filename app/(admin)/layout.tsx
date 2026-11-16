@@ -1,5 +1,10 @@
 import { AdminShell } from "@/components/layout/app-sidebar";
+import { AuthGuard } from "./auth-guard";
 
 export default function AdminLayout({ children }: LayoutProps<"/">) {
-  return <AdminShell>{children}</AdminShell>;
+  return (
+    <AuthGuard>
+      <AdminShell>{children}</AdminShell>
+    </AuthGuard>
+  );
 }

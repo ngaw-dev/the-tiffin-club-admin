@@ -11,4 +11,4 @@
 - [x] Any other method value returns 422
 - [x] Tests cover all three paths
 
-*Note: work happens in the Laravel API repo (`the-tiffin-club-api`), admin payment controller + feature tests.*
+_Note: work happens in the Laravel API repo (`the-tiffin-club-api`), admin payment controller + feature tests._

@@ -10,4 +10,4 @@
 - [x] Partial update of known keys still works
 - [x] Tests cover both paths
 
-*Note: work happens in the Laravel API repo (`the-tiffin-club-api`), admin settings controller + feature tests.*
+_Note: work happens in the Laravel API repo (`the-tiffin-club-api`), admin settings controller + feature tests._

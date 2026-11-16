@@ -10,4 +10,4 @@
 - [x] Delete succeeds for a menu with no orders
 - [x] Tests cover both paths
 
-*Note: work happens in the Laravel API repo (`the-tiffin-club-api`), admin menu controller + feature tests.*
+_Note: work happens in the Laravel API repo (`the-tiffin-club-api`), admin menu controller + feature tests._

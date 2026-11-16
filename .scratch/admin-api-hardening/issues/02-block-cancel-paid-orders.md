@@ -11,4 +11,4 @@
 - [x] Other status transitions on a paid order are unaffected
 - [x] Tests cover paid and unpaid cancellation paths
 
-*Note: work happens in the Laravel API repo (`the-tiffin-club-api`), admin order controller + feature tests.*
+_Note: work happens in the Laravel API repo (`the-tiffin-club-api`), admin order controller + feature tests._

@@ -1,3 +1,4 @@
+// app/(admin)/menu/page.tsx
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -79,7 +80,7 @@ export default function MenuPage() {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
+          <h1 className="text-3xl font-bold tracking-tight">
             Today&apos;s Menu —{" "}
             {new Date(`${date}T00:00:00`).toLocaleDateString("en-NZ", {
               weekday: "long",

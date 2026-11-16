@@ -1,45 +1,57 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+// app/(admin)/page.tsx
+import { CalendarClock, ClipboardList, Users } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DashboardPage() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-sm text-muted-foreground">
           Today at a glance: orders in progress, delivery loads, and anything that needs attention
           before the next run leaves the kitchen.
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>Today&apos;s orders</CardDescription>
-            <CardTitle className="text-3xl tabular-nums">—</CardTitle>
+            <ClipboardList className="text-muted-foreground size-4" />
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Tiffins ordered for today&apos;s kitchen run.
+          <CardContent>
+            <p className="text-2xl font-bold tabular-nums">—</p>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Tiffins ordered for today&apos;s kitchen run.
+            </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
+          <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>Active customers</CardDescription>
-            <CardTitle className="text-3xl tabular-nums">0</CardTitle>
+            <Users className="text-muted-foreground size-4" />
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Subscribers currently on a meal plan.
+          <CardContent>
+            <p className="text-2xl font-bold tabular-nums">0</p>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Subscribers currently on a meal plan.
+            </p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader>
+          <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
             <CardDescription>Ordering window</CardDescription>
-            <CardTitle className="flex items-center gap-2 text-3xl">
-              <Badge variant="default">Open · 09:00–16:30</Badge>
-            </CardTitle>
+            <CalendarClock className="text-muted-foreground size-4" />
           </CardHeader>
-          <CardContent className="text-sm text-muted-foreground">
-            Customers can place orders while the window is open.
+          <CardContent>
+            <p className="flex items-center gap-2 text-2xl font-bold">
+              <Badge variant="default">Open · 09:00–16:30</Badge>
+            </p>
+            <p className="text-muted-foreground mt-1 text-sm">
+              Customers can place orders while the window is open.
+            </p>
           </CardContent>
         </Card>
       </div>

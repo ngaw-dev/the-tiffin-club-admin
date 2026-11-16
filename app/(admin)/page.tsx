@@ -35,7 +35,7 @@ export default function DashboardPage() {
           <CardHeader>
             <CardDescription>Ordering window</CardDescription>
             <CardTitle className="flex items-center gap-2 text-3xl">
-              <Badge variant="secondary">Closed</Badge>
+              <Badge variant="default">Open · 09:00–16:30</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent className="text-sm text-muted-foreground">

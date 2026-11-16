@@ -18,6 +18,8 @@ type MenuItem = {
 
 type OrderingWindow = {
   state: "open" | "closed" | "closing_soon";
+  open: boolean;
+  closing_soon: boolean;
   opens_at: string;
   closes_at: string;
 };
@@ -49,6 +51,8 @@ const DAILY_MENU = {
   ] satisfies MenuItem[],
   ordering: {
     state: "open",
+    open: true,
+    closing_soon: false,
     opens_at: "09:00",
     closes_at: "16:30",
   } satisfies OrderingWindow,

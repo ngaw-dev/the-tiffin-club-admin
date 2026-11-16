@@ -21,48 +21,48 @@ All other endpoints require `Authorization: Bearer <token>` and return **401** w
 
 ## Orders
 
-| Method | Path | Notes |
-|---|---|---|
-| GET | `/orders` | Filters: `status`, `fulfilment`, `customer_id`, `menu_id`. Sorts: `placed_at`, `total`. Default `-placed_at`. Includes customer + payments (with `paid` sum). |
-| GET | `/orders/{id}` | Includes items, payments, customer. |
-| PATCH | `/orders/{id}` | `{ "status": "..." }` — status only. Valid: `confirmed`, `ready_for_pickup`, `out_for_delivery`, `completed`, `cancelled`. Writes an audit entry (`status_changed`, actor `staff`). Order contents are immutable. |
+| Method | Path           | Notes                                                                                                                                                                                                             |
+| ------ | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/orders`      | Filters: `status`, `fulfilment`, `customer_id`, `menu_id`. Sorts: `placed_at`, `total`. Default `-placed_at`. Includes customer + payments (with `paid` sum).                                                     |
+| GET    | `/orders/{id}` | Includes items, payments, customer.                                                                                                                                                                               |
+| PATCH  | `/orders/{id}` | `{ "status": "..." }` — status only. Valid: `confirmed`, `ready_for_pickup`, `out_for_delivery`, `completed`, `cancelled`. Writes an audit entry (`status_changed`, actor `staff`). Order contents are immutable. |
 
 ## Payments
 
-| Method | Path | Notes |
-|---|---|---|
-| GET | `/payments` | Filters: `method`, `order_id`, `customer_id`. Sorts: `paid_at`, `amount`. Default `-paid_at`. |
-| POST | `/payments` | `{ "order_id": 1, "amount": 20.00 }` — records a manual cash payment (dollars in, cents stored). 422 if the amount exceeds the order's outstanding balance. |
+| Method | Path        | Notes                                                                                                                                                       |
+| ------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/payments` | Filters: `method`, `order_id`, `customer_id`. Sorts: `paid_at`, `amount`. Default `-paid_at`.                                                               |
+| POST   | `/payments` | `{ "order_id": 1, "amount": 20.00 }` — records a manual cash payment (dollars in, cents stored). 422 if the amount exceeds the order's outstanding balance. |
 
 Refunds / marking payments failed are not supported.
 
 ## Customers
 
-| Method | Path | Notes |
-|---|---|---|
-| GET | `/customers` | Filters: `name`, `email`, `suburb`. Sort: `name`. Includes `order_count`. |
-| GET | `/customers/{id}` | Includes orders (with payments), newest first. |
-| PATCH | `/customers/{id}` | Any of `name`, `email`, `phone`, `address`, `suburb`. Email is lowercased, phone normalized to digits. No create/delete/blocking. |
+| Method | Path              | Notes                                                                                                                             |
+| ------ | ----------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/customers`      | Filters: `name`, `email`, `suburb`. Sort: `name`. Includes `order_count`.                                                         |
+| GET    | `/customers/{id}` | Includes orders (with payments), newest first.                                                                                    |
+| PATCH  | `/customers/{id}` | Any of `name`, `email`, `phone`, `address`, `suburb`. Email is lowercased, phone normalized to digits. No create/delete/blocking. |
 
 ## Menus
 
-| Method | Path | Notes |
-|---|---|---|
-| GET | `/menus` | Filter: `menu_date`. Sort: `menu_date`. Default `-menu_date`. Includes items. |
-| POST | `/menus` | `{ "menu_date": "YYYY-MM-DD", "cutoff_time": "HH:MM"? }` — unique date. |
-| GET | `/menus/{id}` | Includes items. |
-| PATCH | `/menus/{id}` | `menu_date`, `cutoff_time`, and/or `publish: true/false` (sets/clears `published_at`). |
-| DELETE | `/menus/{id}` | Deletes the menu and its items (orders keep snapshot prices). Does not delete orders. |
-| POST | `/menus/{id}/items` | `{ type, name, description?, price, sort_order? }` — `type`: `main` \| `extra`. |
-| PATCH | `/menus/{id}/items/{itemId}` | Same fields, all optional. |
-| DELETE | `/menus/{id}/items/{itemId}` | Safe for existing orders — `order_items` snapshot `unit_price`. |
+| Method | Path                         | Notes                                                                                  |
+| ------ | ---------------------------- | -------------------------------------------------------------------------------------- |
+| GET    | `/menus`                     | Filter: `menu_date`. Sort: `menu_date`. Default `-menu_date`. Includes items.          |
+| POST   | `/menus`                     | `{ "menu_date": "YYYY-MM-DD", "cutoff_time": "HH:MM"? }` — unique date.                |
+| GET    | `/menus/{id}`                | Includes items.                                                                        |
+| PATCH  | `/menus/{id}`                | `menu_date`, `cutoff_time`, and/or `publish: true/false` (sets/clears `published_at`). |
+| DELETE | `/menus/{id}`                | Deletes the menu and its items (orders keep snapshot prices). Does not delete orders.  |
+| POST   | `/menus/{id}/items`          | `{ type, name, description?, price, sort_order? }` — `type`: `main` \| `extra`.        |
+| PATCH  | `/menus/{id}/items/{itemId}` | Same fields, all optional.                                                             |
+| DELETE | `/menus/{id}/items/{itemId}` | Safe for existing orders — `order_items` snapshot `unit_price`.                        |
 
 ## Global Settings
 
-| Method | Path | Notes |
-|---|---|---|
-| GET | `/settings` | Same shape as public `GET /v1/settings`. |
-| PUT | `/settings` | Partial update of any known key: `delivery_suburbs` (array), `order_cutoff_time`, `pickup_start_time`, `pickup_end_time` (`HH:MM`), `store_phone`, `store_phone_alternate`, `store_email` (email), `pickup_address`, `pickup_map_url` (url). Unknown keys are rejected. |
+| Method | Path        | Notes                                                                                                                                                                                                                                                                   |
+| ------ | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/settings` | Same shape as public `GET /v1/settings`.                                                                                                                                                                                                                                |
+| PUT    | `/settings` | Partial update of any known key: `delivery_suburbs` (array), `order_cutoff_time`, `pickup_start_time`, `pickup_end_time` (`HH:MM`), `store_phone`, `store_phone_alternate`, `store_email` (email), `pickup_address`, `pickup_map_url` (url). Unknown keys are rejected. |
 
 ## Notes
 

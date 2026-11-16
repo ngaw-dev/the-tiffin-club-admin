@@ -56,9 +56,9 @@ routes, so the primitive was composed instead.
 
 ## Decision Log
 
-| Date       | Decision                                                                                       | Rationale                                                     |
-| ---------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| 2026-11-16 | ESLint/Prettier dropped in favor of oxlint + oxfmt                                             | Faster, fewer deps; matches repo scripts `lint:ox` / `format` |
-| 2026-11-16 | shadcn/ui + @shadcnblocks premium blocks as component source of truth (mirrors storefront app) | Consistency, speed, premium quality                           |
-| 2026-11-16 | Tailwind v4 CSS-variable tokens, neutral base, no `tailwind.config.ts`                         | Tailwind v4 `@theme inline` replaces config file              |
+| Date       | Decision                                                                                                                                            | Rationale                                                                                                 |
+| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 2026-11-16 | ESLint/Prettier dropped in favor of oxlint + oxfmt                                                                                                  | Faster, fewer deps; matches repo scripts `lint:ox` / `format`                                             |
+| 2026-11-16 | shadcn/ui + @shadcnblocks premium blocks as component source of truth (mirrors storefront app)                                                      | Consistency, speed, premium quality                                                                       |
+| 2026-11-16 | Tailwind v4 CSS-variable tokens, neutral base, no `tailwind.config.ts`                                                                              | Tailwind v4 `@theme inline` replaces config file                                                          |
 | 2026-11-16 | Admin shell = shadcn `sidebar` primitive + Next `<Link>` w/ `usePathname` active state; mobile via sidebar's built-in Sheet; nav buttons `min-h-11` | @shadcnblocks shells don't do real routing; primitive composition is the smallest correct fit (ticket 03) |

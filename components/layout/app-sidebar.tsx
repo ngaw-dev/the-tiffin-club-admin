@@ -39,18 +39,20 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <Sidebar>
         <SidebarHeader>
           <div className="flex h-14 items-center gap-2 px-2">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground">
+            <span className="bg-primary flex size-8 items-center justify-center rounded-lg font-heading text-sm font-semibold text-primary-foreground">
               TC
             </span>
             <div className="grid leading-tight">
-              <span className="text-sm font-semibold">The Tiffin Club</span>
-              <span className="text-xs text-muted-foreground">Admin console</span>
+              <span className="font-heading text-sm font-semibold">The Tiffin Club</span>
+              <span className="text-muted-foreground text-xs">Admin console</span>
             </div>
           </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
-            <SidebarGroupLabel>Sections</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-xs tracking-wider uppercase">
+              Sections
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {sections.map((section) => (
@@ -59,7 +61,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                       asChild
                       tooltip={section.title}
                       isActive={isActive(pathname, section.href)}
-                      className="min-h-11"
+                      className="data-active:bg-primary/10 data-active:text-primary min-h-11 text-sm"
                     >
                       <Link href={section.href}>
                         <section.icon />

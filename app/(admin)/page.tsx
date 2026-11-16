@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function DashboardPage() {
   return (
@@ -10,16 +11,49 @@ export default function DashboardPage() {
           before the next run leaves the kitchen.
         </p>
       </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardDescription>Today&apos;s orders</CardDescription>
+            <CardTitle className="text-3xl tabular-nums">—</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Tiffins ordered for today&apos;s kitchen run.
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>Active customers</CardDescription>
+            <CardTitle className="text-3xl tabular-nums">0</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Subscribers currently on a meal plan.
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardDescription>Ordering window</CardDescription>
+            <CardTitle className="flex items-center gap-2 text-3xl">
+              <Badge variant="secondary">Closed</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-muted-foreground">
+            Customers can place orders while the window is open.
+          </CardContent>
+        </Card>
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>Coming in a later milestone</CardTitle>
+          <CardTitle>Orders today</CardTitle>
           <CardDescription>
-            Live counts for today&apos;s tiffins, outstanding deliveries, and kitchen load will
-            appear here once order tracking lands.
+            No orders yet. Once customers start ordering, each tiffin appears here with its pickup
+            or delivery status.
           </CardDescription>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Until then, use the sidebar to manage the weekly menu and look up customers.
+          Orders will show up here as soon as the first one comes in.
         </CardContent>
       </Card>
     </div>

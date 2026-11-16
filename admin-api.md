@@ -19,7 +19,6 @@ All other endpoints require `Authorization: Bearer <token>` and return **401** w
 - List endpoints support Spatie Query Builder params: `?filter[...]=`, `?sort=` (prefix `-` for descending), `?page=`, `?per_page=` (default 15).
 - All money amounts are **integer cents** — in both requests and responses, including `POST /payments`. (The legacy staff panel's settle form submits dollars; that is legacy-only.)
 - Fulfilment values: `pickup` | `delivery`.
-- Fulfilment values: `pickup` | `delivery`.
 
 ## Orders
 

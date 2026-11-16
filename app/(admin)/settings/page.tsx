@@ -41,12 +41,17 @@ type SettingsPayload = {
 
 type FormState = Omit<Settings, "delivery_suburbs"> & { suburbsText: string };
 
+/** The API stores HH:MM but may return "HH:MM:SS" — normalize to HH:MM for inputs and PUTs. */
+function toHHMM(time: string | null): string {
+  return time ? time.slice(0, 5) : "";
+}
+
 function toForm(settings: Settings): FormState {
   return {
     ...settings,
-    order_cutoff_time: settings.order_cutoff_time ?? "",
-    pickup_start_time: settings.pickup_start_time ?? "",
-    pickup_end_time: settings.pickup_end_time ?? "",
+    order_cutoff_time: toHHMM(settings.order_cutoff_time),
+    pickup_start_time: toHHMM(settings.pickup_start_time),
+    pickup_end_time: toHHMM(settings.pickup_end_time),
     suburbsText: settings.delivery_suburbs.join("\n"),
   };
 }
@@ -97,9 +102,9 @@ export default function SettingsPage() {
         .split("\n")
         .map((line) => line.trim())
         .filter((line) => line.length > 0),
-      order_cutoff_time: form.order_cutoff_time || null,
-      pickup_start_time: form.pickup_start_time || null,
-      pickup_end_time: form.pickup_end_time || null,
+      order_cutoff_time: form.order_cutoff_time ? form.order_cutoff_time.slice(0, 5) : null,
+      pickup_start_time: form.pickup_start_time ? form.pickup_start_time.slice(0, 5) : null,
+      pickup_end_time: form.pickup_end_time ? form.pickup_end_time.slice(0, 5) : null,
       store_phone: form.store_phone,
       store_phone_alternate: form.store_phone_alternate,
       store_email: form.store_email,

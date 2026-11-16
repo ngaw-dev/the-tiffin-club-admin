@@ -36,6 +36,7 @@ export type Order = {
   /** Sum of recorded payments, in cents (`paid` on the API when payments are loaded). */
   paid_sum: number;
   placed_at: string; // ISO timestamp
+  updated_at?: string; // ISO timestamp of last change (status, payments)
   customer_id?: number;
   menu_id?: number;
   customer?: { id: number; name: string };

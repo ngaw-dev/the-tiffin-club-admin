@@ -23,7 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { normalizeOrder, ORDER_STATUSES, STATUS_LABELS, type Order, type OrderStatus } from "../types";
+import { normalizeOrder, STATUS_LABELS, type Order, type OrderStatus } from "../types";
 
 type OrderItem = {
   id?: number;
@@ -51,6 +51,13 @@ function statusVariant(status: OrderStatus) {
       return "outline" as const;
   }
 }
+
+/** One-way lifecycle per admin-api.md; only the next legal move(s) are offered. */
+const NEXT_STATUS: Partial<Record<OrderStatus, { to: OrderStatus; label: string }>> = {
+  confirmed: { to: "ready_for_pickup", label: "Mark ready" },
+  ready_for_pickup: { to: "out_for_delivery", label: "Mark out for delivery" },
+  out_for_delivery: { to: "completed", label: "Mark completed" },
+};
 
 export default function OrderDetailPage() {
   const params = useParams<{ id: string }>();
@@ -101,6 +108,7 @@ export default function OrderDetailPage() {
   const paidSum = order?.paid_sum ?? 0;
   const outstanding = total - paidSum;
   const hasPayments = paidSum > 0;
+  const nextTransition = order ? NEXT_STATUS[order.status] : undefined;
 
   async function changeStatus(next: OrderStatus) {
     if (!order || next === order.status) return;
@@ -184,6 +192,9 @@ export default function OrderDetailPage() {
         <p className="text-sm text-muted-foreground">
           Placed {order.placed_at ? new Date(order.placed_at).toLocaleString() : "—"} ·{" "}
           <span className="capitalize">{order.fulfilment}</span>
+          {order.updated_at
+            ? ` · Updated ${new Date(order.updated_at).toLocaleString()}`
+            : ""}
         </p>
       </div>
 
@@ -218,28 +229,37 @@ export default function OrderDetailPage() {
         <Badge variant={statusVariant(order.status)}>
           {STATUS_LABELS[order.status] ?? order.status}
         </Badge>
-        <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-          Status
-          <select
-            className="h-9 rounded-md border border-input bg-transparent px-3 text-sm text-foreground disabled:opacity-50"
-            value={order.status}
+        {nextTransition ? (
+          <Button
+            size="sm"
             disabled={statusBusy}
-            onChange={(e) => void changeStatus(e.target.value as OrderStatus)}
+            onClick={() => void changeStatus(nextTransition.to)}
           >
-            {ORDER_STATUSES.map((s) => (
-              <option key={s} value={s} disabled={s === "cancelled" && hasPayments}>
-                {STATUS_LABELS[s]}
-              </option>
-            ))}
-          </select>
-        </label>
+            {statusBusy ? "Updating…" : nextTransition.label}
+          </Button>
+        ) : (
+          <span className="text-xs text-muted-foreground">
+            {order.status === "completed" ? "Completed — terminal status" : ""}
+          </span>
+        )}
+        {order.status !== "completed" && order.status !== "cancelled" && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-destructive"
+            disabled={statusBusy || hasPayments}
+            onClick={() => void changeStatus("cancelled")}
+          >
+            Cancel order
+          </Button>
+        )}
         {statusSaved && <span className="text-sm text-muted-foreground">{statusSaved}</span>}
         {statusError && <span className="text-sm text-destructive">{statusError}</span>}
-        {hasPayments && (
+        {order.status !== "completed" && order.status !== "cancelled" && hasPayments && (
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="cursor-help text-xs text-muted-foreground underline decoration-dotted">
-                Why is Cancelled unavailable?
+                Why is Cancel unavailable?
               </span>
             </TooltipTrigger>
             <TooltipContent>Order has recorded payments</TooltipContent>

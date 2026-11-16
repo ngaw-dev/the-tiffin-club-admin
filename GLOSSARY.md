@@ -28,6 +28,18 @@ _Avoid_: Deadline, closing time, cutoff time
 A customer's request for items from a single day's menu, placed within the Ordering Window and paying in person.
 _Avoid_: Purchase, booking, cart
 
+**Fulfilment**:
+How an Order is handed to the Customer — pickup or delivery. A fixed attribute set at checkout, not a workflow.
+_Avoid_: Fulfillment (US spelling), shipping
+
+**Order Status**:
+The one-way workflow state of an Order: confirmed → ready for pickup → out for delivery → completed, with cancelled reachable from any non-terminal state. Server-enforced and audited.
+_Avoid_: Fulfilment (that's pickup vs delivery), order state
+
+**Payment**:
+An immutable record of cash collected against an Order, in whole cents. Never edited, refunded, or deleted (ADR 0001).
+_Avoid_: Transaction, refund
+
 **Customer**:
 The person placing orders, identified by email or phone. Found or created at checkout from the submitted contact details.
 _Avoid_: User, account holder, Guest (Guest means a customer without an account)

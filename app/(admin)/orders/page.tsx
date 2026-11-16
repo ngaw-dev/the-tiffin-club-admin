@@ -4,6 +4,8 @@
 // Orders list: Spatie query-builder filters/sorts + pagination against GET /orders.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ApiError, api } from "@/lib/api";
 import { formatNzd } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
@@ -62,6 +64,7 @@ function statusVariant(status: OrderStatus) {
 }
 
 export default function OrdersPage() {
+  const router = useRouter();
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS);
   const [sortKey, setSortKey] = useState<SortKey>("placed_at");
@@ -257,8 +260,20 @@ export default function OrdersPage() {
               </TableHeader>
               <TableBody>
                 {orders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium">#{order.id}</TableCell>
+                  <TableRow
+                    key={order.id}
+                    className="cursor-pointer"
+                    onClick={() => router.push(`/orders/${order.id}`)}
+                  >
+                    <TableCell className="font-medium">
+                      <Link
+                        href={`/orders/${order.id}`}
+                        className="hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        #{order.id}
+                      </Link>
+                    </TableCell>
                     <TableCell>{order.customer?.name ?? "—"}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {order.placed_at ? new Date(order.placed_at).toLocaleString() : "—"}

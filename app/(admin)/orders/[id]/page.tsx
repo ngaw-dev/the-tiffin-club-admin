@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ApiError, api } from "@/lib/api";
-import { formatNzd } from "@/lib/money";
+import { centsToDollars, formatNzd } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -102,7 +102,7 @@ export default function OrderDetailPage() {
   const total = order?.total ?? 0;
   const paidSum = order?.paid_sum ?? 0;
   const outstanding = total - paidSum;
-  const paymentDisabled = outstanding <= 0 || order?.status === "cancelled";
+  const showPaymentForm = outstanding > 0 && order?.status !== "cancelled";
   const hasPayments = paidSum > 0;
   const nextTransition = order ? nextStatusTransition(order.status, order.fulfilment) : undefined;
 
@@ -293,7 +293,7 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          {!paymentDisabled ? (
+          {showPaymentForm ? (
             <Card>
               <CardContent>
                 <h2 className="mb-1 text-lg font-semibold">Record payment</h2>
@@ -302,7 +302,7 @@ export default function OrderDetailPage() {
                 </p>
                 <RecordPaymentForm
                   orderId={order.id}
-                  initialAmount={outstanding > 0 ? (outstanding / 100).toFixed(2) : ""}
+                  initialAmount={centsToDollars(outstanding)}
                   onRecorded={() => void load()}
                 />
               </CardContent>

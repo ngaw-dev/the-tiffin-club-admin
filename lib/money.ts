@@ -7,6 +7,11 @@ export function formatNzd(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
+/** Convert integer cents to a plain dollar string ("16.50"), e.g. for prefilling a form. */
+export function centsToDollars(cents: number): string {
+  return (cents / 100).toFixed(2);
+}
+
 /** Parse a dollar amount ("16", "16.5", "16.50") to integer cents. Returns NaN on invalid input. */
 export function dollarsToCents(input: string): number {
   const trimmed = input.trim().replace(/^\$/, "");

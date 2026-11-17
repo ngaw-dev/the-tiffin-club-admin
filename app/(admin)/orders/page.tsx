@@ -153,7 +153,7 @@ export default function OrdersPage() {
       </div>
 
       <Card>
-        <CardContent className="flex flex-wrap items-end gap-3 pt-6">
+        <CardContent className="flex flex-wrap items-end gap-3">
           <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
             Status
             <select
@@ -230,7 +230,7 @@ export default function OrdersPage() {
       </Card>
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent>
           {error ? (
             <div className="flex flex-col items-start gap-2 py-8 text-sm text-destructive">
               <p>{error}</p>

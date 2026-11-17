@@ -168,7 +168,7 @@ export default function OrderDetailPage() {
           ← Back to orders
         </Link>
         <Card>
-          <CardContent className="pt-6">
+          <CardContent>
             <div className="flex flex-col items-start gap-2 py-8 text-sm text-destructive">
               <p>{error ?? "Order not found."}</p>
               <Button variant="outline" size="sm" onClick={() => void load()}>
@@ -197,19 +197,19 @@ export default function OrderDetailPage() {
 
       <div className="grid gap-6 md:grid-cols-3">
         <Card>
-          <CardContent className="flex flex-col gap-1 pt-6">
+          <CardContent className="flex flex-col gap-1">
             <p className="text-xs font-medium text-muted-foreground">Total</p>
             <p className="text-2xl font-semibold tabular-nums">{formatNzd(total)}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="flex flex-col gap-1 pt-6">
+          <CardContent className="flex flex-col gap-1">
             <p className="text-xs font-medium text-muted-foreground">Paid</p>
             <p className="text-2xl font-semibold tabular-nums">{formatNzd(paidSum)}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="flex flex-col gap-1 pt-6">
+          <CardContent className="flex flex-col gap-1">
             <p className="text-xs font-medium text-muted-foreground">Outstanding</p>
             <p
               className={`text-2xl font-semibold tabular-nums ${
@@ -266,7 +266,7 @@ export default function OrderDetailPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <CardContent className="pt-6">
+          <CardContent>
             <h2 className="mb-4 text-lg font-semibold">Items</h2>
             {items.length === 0 ? (
               <p className="py-4 text-sm text-muted-foreground">No items recorded.</p>
@@ -305,7 +305,7 @@ export default function OrderDetailPage() {
 
         <div className="flex flex-col gap-6">
           <Card>
-            <CardContent className="flex flex-col gap-4 pt-6">
+            <CardContent className="flex flex-col gap-4">
               <h2 className="text-lg font-semibold">Customer</h2>
               <div className="flex flex-col gap-1 text-sm">
                 <p className="font-medium">{order.customer?.name ?? "—"}</p>
@@ -321,7 +321,7 @@ export default function OrderDetailPage() {
 
           {outstanding > 0 ? (
             <Card>
-              <CardContent className="pt-6">
+              <CardContent>
                 <h2 className="mb-1 text-lg font-semibold">Record cash payment</h2>
                 <p className="mb-4 text-sm text-muted-foreground">
                   Outstanding balance: {formatNzd(outstanding)}
@@ -352,7 +352,7 @@ export default function OrderDetailPage() {
       </div>
 
       <Card>
-        <CardContent className="pt-6">
+        <CardContent>
           <h2 className="mb-4 text-lg font-semibold">Payments</h2>
           {payments.length === 0 ? (
             <p className="py-4 text-sm text-muted-foreground">No payments recorded.</p>

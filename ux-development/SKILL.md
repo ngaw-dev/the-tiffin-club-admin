@@ -93,6 +93,14 @@ Rules:
   applied globally in `app/globals.css` (`button:not(:disabled)`,
   `[role="button"]:not(:disabled)`, `select`, `summary`, `label[for]`); disabled
   controls intentionally stay `cursor: default`.
+- **Respect primitive defaults — no redundant padding overrides.** shadcn
+  components ship with their own spacing model (e.g., `Card` applies `py-6
+  gap-6`, `CardContent` applies `px-6`). Do not override it per-usage with
+  `pt-6`, `p-4`, `py-0`, etc. — that double-pads or fights the default and
+  drifts from the registry. Only override padding when a usage genuinely
+  differs, and prefer fixing the layout around the default. When auditing,
+  remove overrides that merely re-state the default (e.g., `pt-6` on
+  `CardContent` inside a `Card` that already has `py-6`).
 - Every interactive element gets all relevant states: default, hover,
   focus-visible, active, disabled, loading, empty, and error where applicable.
 - Mobile-first: design the smallest layout, then enhance at defined
@@ -151,6 +159,9 @@ Do not call UI work done until every item passes:
 - [ ] Consistency: matches `DESIGN.md` tokens and existing patterns
 - [ ] Primitives: no raw form controls or hand-styled buttons introduced;
       anything touched was migrated to shadcn with `min-h-11` sizing
+- [ ] Primitive defaults: no redundant padding overrides on shadcn components
+      (Card/CardContent/etc. use their built-in spacing unless intentionally
+      deviating, with the deviation justified)
 - [ ] Content: real copy, no placeholders, no dead-end screens or flows
 - [ ] Lint & format: `pnpm lint:ox` clean, `pnpm format:check` passes
 - [ ] Decision log: new/changed decisions recorded in `DESIGN.md`

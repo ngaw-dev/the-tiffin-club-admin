@@ -47,3 +47,15 @@ _Avoid_: Due, amount owed, remaining balance
 **Customer**:
 The person placing orders, identified by email or phone. Found or created at checkout from the submitted contact details.
 _Avoid_: User, account holder, Guest (Guest means a customer without an account)
+
+**List Page**:
+A page that shows a scrolling collection of records — Orders, Customers, or Payments — with filtering, sorting, and pagination. One page of records at a time, fetched from the API on demand.
+_Avoid_: Table view, grid, index (unqualified)
+
+**Applied Filters**:
+The filter values currently governing what a List Page fetches. Changes apply immediately — live for text, instantly for selects — and are reflected in the page URL so a filtered view can be shared or revisited.
+_Avoid_: Draft filters, pending filters, filter buffer
+
+**Query Envelope**:
+The standard wrapper around every list response from the admin API: the records themselves plus pagination metadata. Consumed by List Pages to drive pagination and result counts.
+_Avoid_: Response body, payload (unqualified)

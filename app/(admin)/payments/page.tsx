@@ -1,14 +1,25 @@
 // app/(admin)/payments/page.tsx
+// Payments list: amolsw ServerDataTable in manual (server) mode over GET /payments.
+// Filter/sort/page/per_page state lives in the URL and is serialized to
+// Spatie query-builder params (filter[...], sort, page, per_page).
+
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
-import { api, ApiError } from "@/lib/api";
+import type { ColumnDef } from "@tanstack/react-table";
+
+import {
+  ServerDataTable,
+  useServerTableQuery,
+  type ServerTableState,
+} from "@/components/amolsw/data-table/server-data-table";
+import { api } from "@/lib/api";
 import { formatNzd } from "@/lib/money";
 import { RecordPaymentForm } from "@/components/payments/record-payment-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -17,28 +28,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import type { Payment, PaymentListEnvelope } from "./types";
 
-type Filters = { method: string; customerId: string };
-
-const EMPTY_FILTERS: Filters = { method: "", customerId: "" };
-
-const SORTS = [
-  { value: "-paid_at", label: "Newest paid first" },
-  { value: "paid_at", label: "Oldest paid first" },
-  { value: "-amount", label: "Amount high–low" },
-  { value: "amount", label: "Amount low–high" },
-] as const;
+const DEFAULT_PER_PAGE = 15;
 
 function formatPaidAt(iso?: string): string {
   if (!iso) return "—";
@@ -48,61 +40,108 @@ function formatPaidAt(iso?: string): string {
 }
 
 export default function PaymentsPage() {
-  // Draft filter values, applied on submit.
-  const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS);
-  // Applied filters drive the fetch.
-  const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS);
-  const [sort, setSort] = useState<string>("-paid_at");
-  const [page, setPage] = useState(1);
-
-  const [result, setResult] = useState<PaymentListEnvelope | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
   const [recordOpen, setRecordOpen] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  // Sum of the payments on the current page, for cash reconciliation.
+  const [totalShown, setTotalShown] = useState(0);
 
-  const query = useMemo(
-    () => ({
-      "filter[method]": applied.method || undefined,
-      "filter[customer_id]": applied.customerId || undefined,
-      sort,
-      page: page > 1 ? String(page) : undefined,
-    }),
-    [applied, sort, page],
+  const query = useServerTableQuery({
+    filterKeys: ["method", "customer_id"],
+    defaultSortField: "paid_at",
+    defaultSortDirection: "desc",
+    defaultPerPage: DEFAULT_PER_PAGE,
+  });
+
+  const selectFilters = useMemo(
+    () => [
+      {
+        key: "method",
+        label: "Method",
+        placeholder: "All methods",
+        options: [{ value: "cash", label: "Cash" }],
+      },
+      {
+        key: "customer_id",
+        label: "Customer ID",
+        placeholder: "e.g. 12",
+        options: [],
+      },
+    ],
+    [],
   );
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    api
-      .get<PaymentListEnvelope>("/payments", query)
-      .then((data) => {
-        if (!cancelled) setResult(data);
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(err instanceof ApiError ? err.message : "Something went wrong.");
-          setResult(null);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+  // The API has no free-text payment search — the search box maps to the
+  // numeric customer_id filter (ignored when non-numeric), as on Orders.
+  const fetchPage = useCallback(
+    async (state: ServerTableState, params: Record<string, string | undefined>) => {
+      const { "filter[customer_id]": _selectCustomerId, ...rest } = params;
+      const customerId =
+        state.filters.customer_id || (/^\d+$/.test(state.search) ? state.search : undefined);
+      const result = await api.get<PaymentListEnvelope>("/payments", {
+        ...rest,
+        "filter[customer_id]": customerId,
       });
-    return () => {
-      cancelled = true;
-    };
-  }, [query, reloadKey]);
+      const rows = result.data ?? [];
+      setTotalShown(rows.reduce((sum, p) => sum + p.amount, 0));
+      return { ...result, data: rows };
+    },
+    [],
+  );
 
-  const meta = result?.meta;
-  const lastPage = meta?.last_page ?? 1;
-  // Sum of the payments on the current page, for cash reconciliation.
-  const totalShown = result?.data.reduce((sum, p) => sum + p.amount, 0) ?? 0;
-
-  function applyFilters(next: Filters) {
-    setApplied(next);
-    setPage(1);
-  }
+  const columns = useMemo<ColumnDef<Payment>[]>(
+    () => [
+      {
+        accessorKey: "paid_at",
+        header: "Paid at",
+        cell: ({ row }) => formatPaidAt(row.original.paid_at),
+      },
+      {
+        accessorKey: "customer",
+        header: "Customer",
+        cell: ({ row }) =>
+          row.original.customer ? (
+            <Link
+              href={`/customers/${row.original.customer.id}`}
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              {row.original.customer.name}
+            </Link>
+          ) : (
+            "—"
+          ),
+      },
+      {
+        accessorKey: "order_id",
+        header: "Order",
+        cell: ({ row }) => (
+          <Link
+            href={`/orders/${row.original.order_id}`}
+            className="font-medium text-primary underline-offset-4 hover:underline"
+          >
+            #{row.original.order_id}
+          </Link>
+        ),
+      },
+      {
+        accessorKey: "method",
+        header: "Method",
+        cell: ({ row }) => (
+          <Badge variant="secondary" className="capitalize">
+            {row.original.method}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: "amount",
+        header: "Amount",
+        meta: { className: "text-right" },
+        cell: ({ row }) => (
+          <span className="font-medium tabular-nums">{formatNzd(row.original.amount)}</span>
+        ),
+      },
+    ],
+    [],
+  );
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
@@ -143,153 +182,17 @@ export default function PaymentsPage() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>History</CardTitle>
-          <CardDescription>Filter by method or customer ID.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <form
-            className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto_auto]"
-            onSubmit={(e) => {
-              e.preventDefault();
-              applyFilters(draft);
-            }}
-          >
-            <select
-              aria-label="Filter by method"
-              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
-              value={draft.method}
-              onChange={(e) => setDraft({ ...draft, method: e.target.value })}
-            >
-              <option value="">All methods</option>
-              <option value="cash">Cash</option>
-            </select>
-            <Input
-              aria-label="Filter by customer ID"
-              placeholder="Customer ID"
-              inputMode="numeric"
-              value={draft.customerId}
-              onChange={(e) => setDraft({ ...draft, customerId: e.target.value })}
-            />
-            <select
-              aria-label="Sort"
-              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
-              value={sort}
-              onChange={(e) => {
-                setSort(e.target.value);
-                setPage(1);
-              }}
-            >
-              {SORTS.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-            <div className="flex gap-2">
-              <Button type="submit" disabled={loading}>
-                Filter
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setDraft(EMPTY_FILTERS);
-                  applyFilters(EMPTY_FILTERS);
-                }}
-              >
-                Clear
-              </Button>
-            </div>
-          </form>
-
-          {loading ? (
-            <div className="flex flex-col gap-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : error ? (
-            <p className="text-sm text-destructive">{error}</p>
-          ) : !result || result.data.length === 0 ? (
-            <p className="py-4 text-sm text-muted-foreground">No payments match these filters.</p>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Paid at</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Order</TableHead>
-                    <TableHead>Method</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {result.data.map((payment: Payment) => (
-                    <TableRow key={payment.id}>
-                      <TableCell>{formatPaidAt(payment.paid_at)}</TableCell>
-                      <TableCell className="font-medium">
-                        {payment.customer ? (
-                          <Link
-                            href={`/customers/${payment.customer.id}`}
-                            className="text-primary underline-offset-4 hover:underline"
-                          >
-                            {payment.customer.name}
-                          </Link>
-                        ) : (
-                          "—"
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Link
-                          href={`/orders/${payment.order_id}`}
-                          className="text-primary underline-offset-4 hover:underline"
-                        >
-                          #{payment.order_id}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="capitalize">
-                          {payment.method}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatNzd(payment.amount)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  {meta?.total ?? result.data.length} payment
-                  {(meta?.total ?? result.data.length) === 1 ? "" : "s"}
-                  {meta?.from != null && meta.to != null
-                    ? ` · showing ${meta.from}–${meta.to}`
-                    : ""}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={(meta?.current_page ?? 1) <= 1}
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={(meta?.current_page ?? 1) >= lastPage}
-                    onClick={() => setPage((p) => p + 1)}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
+        <CardContent>
+          <ServerDataTable
+            columns={columns}
+            query={query}
+            fetchPage={fetchPage}
+            selectFilters={selectFilters}
+            searchPlaceholder="Search by customer ID..."
+            emptyTitle="No payments found"
+            emptyDescription="No payments match these filters. Try adjusting or clearing the filters."
+            reloadKey={reloadKey}
+          />
         </CardContent>
       </Card>
     </div>

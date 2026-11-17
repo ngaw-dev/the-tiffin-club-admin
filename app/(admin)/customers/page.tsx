@@ -1,22 +1,23 @@
 // app/(admin)/customers/page.tsx
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { api, ApiError, type ListEnvelope } from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
+// Customers list: amolsw ServerDataTable in manual (server) mode over
+// GET /customers. Filter/sort/page/per_page state lives in the URL and is
+// serialized to Spatie query-builder params (filter[...], sort, page,
+// per_page). The API has no free-text search — the live search box maps to
+// the name filter.
+
+import { useCallback, useMemo } from 'react';
+import Link from 'next/link';
+import type { ColumnDef } from '@tanstack/react-table';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  ServerDataTable,
+  useServerTableQuery,
+  type ServerTableState,
+} from '@/components/amolsw/data-table/server-data-table';
+import { api, type ListEnvelope } from '@/lib/api';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 type Customer = {
   id: number;
@@ -27,69 +28,72 @@ type Customer = {
   order_count: number;
 };
 
-type Filters = { name: string; email: string; suburb: string };
-
-const EMPTY_FILTERS: Filters = { name: "", email: "", suburb: "" };
-
 export default function CustomersPage() {
-  // Draft filter values, applied on submit.
-  const [draft, setDraft] = useState<Filters>(EMPTY_FILTERS);
-  // Applied filters drive the fetch.
-  const [applied, setApplied] = useState<Filters>(EMPTY_FILTERS);
-  const [sort, setSort] = useState("name");
-  const [page, setPage] = useState(1);
+  const query = useServerTableQuery({
+    filterKeys: [],
+    defaultSortField: 'name',
+    defaultSortDirection: 'asc',
+    defaultPerPage: 15,
+  });
 
-  const [result, setResult] = useState<ListEnvelope<Customer> | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const query = useMemo(
-    () => ({
-      "filter[name]": applied.name || undefined,
-      "filter[email]": applied.email || undefined,
-      "filter[suburb]": applied.suburb || undefined,
-      sort,
-      page: page > 1 ? String(page) : undefined,
-    }),
-    [applied, sort, page],
+  const fetchPage = useCallback(
+    async (state: ServerTableState, params: Record<string, string | undefined>) => {
+      const { sort, page, per_page } = params;
+      return api.get<ListEnvelope<Customer>>('/customers', {
+        sort,
+        page,
+        per_page,
+        'filter[name]': state.search || undefined,
+      });
+    },
+    [],
   );
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    api
-      .get<ListEnvelope<Customer>>("/customers", query)
-      .then((data) => {
-        if (!cancelled) setResult(data);
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setError(err instanceof ApiError ? err.message : "Something went wrong.");
-          setResult(null);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [query]);
-
-  const meta = result?.meta;
-  const lastPage = meta?.last_page ?? 1;
-
-  function applyFilters(next: Filters) {
-    setApplied(next);
-    setPage(1);
-  }
+  const columns = useMemo<ColumnDef<Customer>[]>(
+    () => [
+      {
+        accessorKey: 'name',
+        header: 'Name',
+        cell: ({ row }) => (
+          <Link
+            href={`/customers/${row.original.id}`}
+            className='font-medium text-primary underline-offset-4 hover:underline'
+          >
+            {row.original.name}
+          </Link>
+        ),
+      },
+      {
+        accessorKey: 'email',
+        header: 'Email',
+        cell: ({ row }) => row.original.email,
+      },
+      {
+        accessorKey: 'phone',
+        header: 'Phone',
+        enableSorting: false,
+        cell: ({ row }) => row.original.phone || '—',
+      },
+      {
+        accessorKey: 'suburb',
+        header: 'Suburb',
+        cell: ({ row }) => row.original.suburb || '—',
+      },
+      {
+        accessorKey: 'order_count',
+        header: 'Orders',
+        meta: { className: 'text-right' },
+        cell: ({ row }) => <Badge variant='secondary'>{row.original.order_count}</Badge>,
+      },
+    ],
+    [],
+  );
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold tracking-tight">Customers</h1>
-        <p className="text-sm text-muted-foreground">
+    <div className='mx-auto flex w-full max-w-6xl flex-col gap-6'>
+      <div className='flex flex-col gap-1'>
+        <h1 className='text-3xl font-bold tracking-tight'>Customers</h1>
+        <p className='text-sm text-muted-foreground'>
           Browse subscribers, look up delivery details, and see how many orders each customer has
           placed.
         </p>
@@ -98,136 +102,17 @@ export default function CustomersPage() {
       <Card>
         <CardHeader>
           <CardTitle>Directory</CardTitle>
-          <CardDescription>Filter by name, email, or suburb.</CardDescription>
+          <CardDescription>Search by name; sort with the column headers.</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          <form
-            className="grid gap-2 sm:grid-cols-[1fr_1fr_1fr_auto_auto]"
-            onSubmit={(e) => {
-              e.preventDefault();
-              applyFilters(draft);
-            }}
-          >
-            <Input
-              aria-label="Filter by name"
-              placeholder="Name"
-              value={draft.name}
-              onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-            />
-            <Input
-              aria-label="Filter by email"
-              placeholder="Email"
-              type="email"
-              value={draft.email}
-              onChange={(e) => setDraft({ ...draft, email: e.target.value })}
-            />
-            <Input
-              aria-label="Filter by suburb"
-              placeholder="Suburb"
-              value={draft.suburb}
-              onChange={(e) => setDraft({ ...draft, suburb: e.target.value })}
-            />
-            <select
-              aria-label="Sort"
-              className="h-9 rounded-md border border-input bg-transparent px-3 text-sm"
-              value={sort}
-              onChange={(e) => {
-                setSort(e.target.value);
-                setPage(1);
-              }}
-            >
-              <option value="name">Name A–Z</option>
-              <option value="-name">Name Z–A</option>
-            </select>
-            <div className="flex gap-2">
-              <Button type="submit" disabled={loading}>
-                Filter
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setDraft(EMPTY_FILTERS);
-                  applyFilters(EMPTY_FILTERS);
-                }}
-              >
-                Clear
-              </Button>
-            </div>
-          </form>
-
-          {loading ? (
-            <div className="flex flex-col gap-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-10 w-full" />
-              ))}
-            </div>
-          ) : error ? (
-            <p className="text-sm text-destructive">{error}</p>
-          ) : !result || result.data.length === 0 ? (
-            <p className="py-4 text-sm text-muted-foreground">No customers match these filters.</p>
-          ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Suburb</TableHead>
-                    <TableHead className="text-right">Orders</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {result.data.map((customer) => (
-                    <TableRow key={customer.id}>
-                      <TableCell className="font-medium">
-                        <Link
-                          href={`/customers/${customer.id}`}
-                          className="text-primary underline-offset-4 hover:underline"
-                        >
-                          {customer.name}
-                        </Link>
-                      </TableCell>
-                      <TableCell>{customer.email}</TableCell>
-                      <TableCell>{customer.phone || "—"}</TableCell>
-                      <TableCell>{customer.suburb || "—"}</TableCell>
-                      <TableCell className="text-right">
-                        <Badge variant="secondary">{customer.order_count}</Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  {meta?.total ?? result.data.length} customer
-                  {(meta?.total ?? result.data.length) === 1 ? "" : "s"}
-                  {meta?.from != null && meta.to != null
-                    ? ` · showing ${meta.from}–${meta.to}`
-                    : ""}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={(meta?.current_page ?? 1) <= 1}
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={(meta?.current_page ?? 1) >= lastPage}
-                    onClick={() => setPage((p) => p + 1)}
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
+        <CardContent>
+          <ServerDataTable
+            columns={columns}
+            query={query}
+            fetchPage={fetchPage}
+            searchPlaceholder='Search by name...'
+            emptyTitle='No customers found'
+            emptyDescription='No customers match this search. Try a different name or clear the search.'
+          />
         </CardContent>
       </Card>
     </div>

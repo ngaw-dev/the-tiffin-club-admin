@@ -4,7 +4,9 @@
 import { Soup } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
 
+import { PasswordInput } from "@/components/amolsw/password-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,12 +17,10 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function onSubmit(event: React.FormEvent) {
     event.preventDefault();
-    setError(null);
     setBusy(true);
     try {
       const data = await api.post<{ token: string; user: SessionUser }>("/login", {
@@ -30,7 +30,7 @@ export default function LoginPage() {
       saveSession(data.token, data.user);
       router.replace("/");
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
+      toast.error(err instanceof ApiError ? err.message : "Something went wrong. Please try again.");
     } finally {
       setBusy(false);
     }
@@ -61,24 +61,14 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className="flex flex-col gap-2">
-              <label htmlFor="password" className="text-sm font-medium">
-                Password
-              </label>
-              <Input
-                id="password"
-                type="password"
-                required
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            {error && (
-              <p className="text-destructive text-sm" role="alert">
-                {error}
-              </p>
-            )}
+            <PasswordInput
+              id="password"
+              label="Password"
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={setPassword}
+            />
             <Button type="submit" disabled={busy}>
               {busy ? "Signing in…" : "Sign in"}
             </Button>

@@ -1,6 +1,8 @@
 // app/layout.tsx
 import type { Metadata } from "next";
 import { JetBrains_Mono, Poppins, Source_Sans_3 } from "next/font/google";
+
+import { ToastProvider } from "@/components/amolsw/toast-provider/toast-provider-client";
 import "./globals.css";
 
 // Skeleton-design fonts: Poppins for headings, Source Sans for body,
@@ -34,7 +36,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${poppins.variable} ${sourceSans.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <ToastProvider />
+      </body>
     </html>
   );
 }

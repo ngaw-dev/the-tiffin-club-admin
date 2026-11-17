@@ -3,12 +3,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { format } from "date-fns";
+import { UtensilsCrossed } from "lucide-react";
+
+import { DateTimeField } from "@/components/amolsw/date-time-field";
+import { EmptyState } from "@/components/amolsw/empty-state";
 import { ApiError, api } from "@/lib/api";
 import { formatNzd } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -24,8 +28,25 @@ import { MenuItemForm } from "@/components/menus/menu-item-form";
 
 import { isMenuPublished, type Menu, type MenuItem } from "./types";
 
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+// Menu API values are "YYYY-MM-DD" / "HH:MM"; the DateTimeField works in
+// Date objects and "HH:MM:SS" time strings, so convert at the boundary.
+function parseDate(date: string): Date | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+  const parsed = new Date(`${date}T00:00:00`);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function toDateInput(date: Date): string {
+  return format(date, "yyyy-MM-dd");
+}
+
+function toTimeInput(time: string): string | null {
+  return time === "" ? null : `${time}:00`;
+}
+
+function fromTimeInput(time: string): string {
+  return time.slice(0, 5);
+}
 
 function formatDate(date: string): string {
   return new Date(`${date}T00:00:00`).toLocaleDateString("en-NZ", {
@@ -55,8 +76,8 @@ export default function MenuPage() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const [creating, setCreating] = useState(false);
-  const [newDate, setNewDate] = useState("");
-  const [newCutoff, setNewCutoff] = useState("");
+  const [newDate, setNewDate] = useState<Date | null>(null);
+  const [newCutoff, setNewCutoff] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
 
   const loadMenus = useCallback(async (filterDate: string) => {
@@ -96,22 +117,20 @@ export default function MenuPage() {
   async function createMenu(event: React.FormEvent) {
     event.preventDefault();
     setCreateError(null);
-    if (!DATE_RE.test(newDate)) {
-      setCreateError("Enter a date in YYYY-MM-DD format.");
-      return;
-    }
-    if (newCutoff !== "" && !TIME_RE.test(newCutoff)) {
-      setCreateError("Cutoff time must be in HH:MM (24-hour) format.");
+    // The DateTimeField only emits real picked dates, so an unset/invalid
+    // date cannot be submitted — preserve the required rule here.
+    if (newDate === null) {
+      setCreateError("Pick a date for the menu.");
       return;
     }
     setCreating(true);
     try {
       const menu = await api.post<Menu>("/menus", {
-        menu_date: newDate,
-        ...(newCutoff !== "" ? { cutoff_time: newCutoff } : {}),
+        menu_date: toDateInput(newDate),
+        ...(newCutoff !== null ? { cutoff_time: fromTimeInput(newCutoff) } : {}),
       });
-      setNewDate("");
-      setNewCutoff("");
+      setNewDate(null);
+      setNewCutoff(null);
       setDateFilter("");
       setSelectedId(menu.id);
       await loadMenus("");
@@ -199,15 +218,13 @@ export default function MenuPage() {
 
       <div className="flex flex-wrap items-end gap-3">
         <div className="flex flex-col gap-1">
-          <label htmlFor="menu-date-filter" className="text-sm font-medium">
-            Filter by date
-          </label>
-          <Input
-            id="menu-date-filter"
-            type="date"
-            className="w-44"
-            value={dateFilter}
-            onChange={(event) => setDateFilter(event.target.value)}
+          <DateTimeField
+            date={parseDate(dateFilter)}
+            time={null}
+            showTime={false}
+            dateLabel="Filter by date"
+            onDateChange={(date) => setDateFilter(date === null ? "" : toDateInput(date))}
+            onTimeChange={() => {}}
           />
         </div>
         {dateFilter !== "" && (
@@ -286,32 +303,16 @@ export default function MenuPage() {
             </CardHeader>
             <CardContent>
               <form className="flex flex-col gap-3" onSubmit={createMenu}>
-                <div className="flex flex-wrap gap-3">
-                  <div className="flex flex-col gap-1">
-                    <label htmlFor="new-menu-date" className="text-sm font-medium">
-                      Date
-                    </label>
-                    <Input
-                      id="new-menu-date"
-                      type="date"
-                      required
-                      value={newDate}
-                      onChange={(event) => setNewDate(event.target.value)}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label htmlFor="new-menu-cutoff" className="text-sm font-medium">
-                      Cutoff time
-                    </label>
-                    <Input
-                      id="new-menu-cutoff"
-                      type="time"
-                      value={newCutoff}
-                      onChange={(event) => setNewCutoff(event.target.value)}
-                    />
-                  </div>
-                </div>
-                {createError !== null && <p className="text-sm text-destructive">{createError}</p>}
+                <DateTimeField
+                  date={newDate}
+                  time={newCutoff}
+                  dateLabel="Date"
+                  timeLabel="Cutoff time"
+                  required
+                  dateError={createError ?? undefined}
+                  onDateChange={setNewDate}
+                  onTimeChange={setNewCutoff}
+                />
                 <Button type="submit" disabled={creating}>
                   {creating ? "Creating…" : "Create menu"}
                 </Button>
@@ -345,7 +346,8 @@ function MenuDetail({
   onItemSaved: (menu: Menu) => void;
   onItemDeleted: (menuId: number, itemId: number) => void;
 }) {
-  const [cutoff, setCutoff] = useState("");
+  const [cutoff, setCutoff] = useState<string | null>(null);
+  const [cutoffError, setCutoffError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [addingMain, setAddingMain] = useState(false);
@@ -354,7 +356,7 @@ function MenuDetail({
   const [itemError, setItemError] = useState<string | null>(null);
 
   useEffect(() => {
-    setCutoff(menu?.cutoff_time ?? "");
+    setCutoff(toTimeInput(menu?.cutoff_time ?? ""));
   }, [menu?.id, menu?.cutoff_time]);
 
   useEffect(() => {
@@ -371,7 +373,11 @@ function MenuDetail({
           <CardTitle>Menu details</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">Select a menu to see its items.</p>
+          <EmptyState
+            icon={UtensilsCrossed}
+            title="No menu selected"
+            description="Select a menu to see its items."
+          />
         </CardContent>
       </Card>
     );
@@ -397,28 +403,37 @@ function MenuDetail({
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <div className="flex flex-wrap items-end gap-3">
-            <div className="flex flex-col gap-1">
-              <label htmlFor={`cutoff-${menu.id}`} className="text-sm font-medium">
-                Cutoff time
-              </label>
-              <Input
-                id={`cutoff-${menu.id}`}
-                type="time"
-                className="w-32"
-                value={cutoff}
-                onChange={(event) => setCutoff(event.target.value)}
+            <div className="flex w-64 flex-col gap-1">
+              <DateTimeField
+                date={null}
+                showTime={false}
+                time={cutoff}
+                onDateChange={() => {}}
+                onTimeChange={setCutoff}
+                timeError={cutoffError ?? undefined}
               />
             </div>
             <Button
               variant="outline"
               size="sm"
-              disabled={saving || cutoff === (menu.cutoff_time ?? "")}
+              disabled={saving || cutoff === toTimeInput(menu.cutoff_time ?? "")}
               onClick={async () => {
+                setCutoffError(null);
+                if (cutoff !== null && !/^\d{2}:\d{2}:\d{2}$/.test(cutoff)) {
+                  setCutoffError("Pick a cutoff time in HH:MM (24-hour) format.");
+                  return;
+                }
                 setSaving(true);
-                await onPatch(
-                  menu,
-                  cutoff === "" ? { cutoff_time: null } : { cutoff_time: cutoff },
-                );
+                try {
+                  await onPatch(
+                    menu,
+                    cutoff === null
+                      ? { cutoff_time: null }
+                      : { cutoff_time: fromTimeInput(cutoff) },
+                  );
+                } catch {
+                  // onPatch handles rollback + error display.
+                }
                 setSaving(false);
               }}
             >

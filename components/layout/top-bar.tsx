@@ -3,10 +3,11 @@
 
 // Top bar: sidebar trigger, search, notifications, user menu with real session + logout.
 
-import { Bell, LogOut, Search } from "lucide-react";
+import { Bell, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { SearchInput } from "@/components/amolsw/search-input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,9 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";import { SidebarTrigger } from "@/components/ui/sidebar";
 import { api } from "@/lib/api";
 import { clearSession, loadSession, type SessionUser } from "@/lib/session";
 
@@ -48,10 +47,7 @@ export function TopBar() {
     <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background px-4">
       <SidebarTrigger className="min-h-11 min-w-11" />
       <Separator orientation="vertical" className="data-vertical:h-4 data-vertical:self-auto" />
-      <div className="relative max-w-sm flex-1">
-        <Search className="text-muted-foreground absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
-        <Input type="search" placeholder="Search" className="pl-8" aria-label="Search" />
-      </div>
+      <SearchInput placeholder="Search" aria-label="Search" className="max-w-sm flex-1" />
       <div className="ml-auto flex items-center gap-1">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

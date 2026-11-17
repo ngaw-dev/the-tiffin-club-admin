@@ -5,14 +5,13 @@
 // record cash payment (POST /payments). Money is cents at the API boundary only.
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useParams } from "next/navigation";
+import { BackLink } from "@/components/amolsw/back-link";
 import { ApiError, api } from "@/lib/api";
 import { centsToDollars, formatNzd } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -138,9 +137,7 @@ export default function OrderDetailPage() {
   if (error || !order) {
     return (
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
-        <Link href="/orders" className="text-sm text-muted-foreground hover:text-foreground">
-          ← Back to orders
-        </Link>
+        <BackLink href="/orders" label="Back to orders" className="mb-0" />
         <Card>
           <CardContent>
             <div className="flex flex-col items-start gap-2 py-8 text-sm text-destructive">
@@ -158,9 +155,7 @@ export default function OrderDetailPage() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <Link href="/orders" className="text-sm text-muted-foreground hover:text-foreground">
-          ← Back to orders
-        </Link>
+        <BackLink href="/orders" label="Back to orders" className="mb-0" />
         <h1 className="text-3xl font-bold tracking-tight">Order #{order.id}</h1>
         <p className="text-sm text-muted-foreground">
           Placed {order.placed_at ? new Date(order.placed_at).toLocaleString() : "—"} ·{" "}

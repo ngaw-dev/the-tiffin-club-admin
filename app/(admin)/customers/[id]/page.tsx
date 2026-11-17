@@ -3,6 +3,7 @@
 
 import { use, useEffect, useState } from "react";
 import Link from "next/link";
+import { BackLink } from "@/components/amolsw/back-link";
 import { api, ApiError } from "@/lib/api";
 import { formatNzd } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
@@ -130,9 +131,7 @@ export default function CustomerDetailPage(props: PageProps<"/customers/[id]">) 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
         <h1 className="text-3xl font-bold tracking-tight">Customer</h1>
         <p className="text-sm text-destructive">{error ?? "Customer not found."}</p>
-        <Button asChild variant="outline" className="w-fit">
-          <Link href="/customers">Back to customers</Link>
-        </Button>
+        <BackLink href="/customers" label="Back to customers" className="mb-0" />
       </div>
     );
   }

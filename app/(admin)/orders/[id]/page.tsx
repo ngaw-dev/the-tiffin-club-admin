@@ -8,7 +8,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { ApiError, api } from "@/lib/api";
-import { dollarsToCents, formatNzd } from "@/lib/money";
+import { formatNzd } from "@/lib/money";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,6 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { RecordPaymentForm } from "@/components/payments/record-payment-form";
 import {
   nextStatusTransition,
   normalizeOrder,
@@ -70,11 +71,6 @@ export default function OrderDetailPage() {
   const [statusError, setStatusError] = useState<string | null>(null);
   const [statusSaved, setStatusSaved] = useState<string | null>(null);
 
-  const [amount, setAmount] = useState("");
-  const [paymentBusy, setPaymentBusy] = useState(false);
-  const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [paymentSaved, setPaymentSaved] = useState<string | null>(null);
-
   const load = useCallback(async () => {
     if (!id) return;
     setLoading(true);
@@ -106,6 +102,7 @@ export default function OrderDetailPage() {
   const total = order?.total ?? 0;
   const paidSum = order?.paid_sum ?? 0;
   const outstanding = total - paidSum;
+  const paymentDisabled = outstanding <= 0 || order?.status === "cancelled";
   const hasPayments = paidSum > 0;
   const nextTransition = order ? nextStatusTransition(order.status, order.fulfilment) : undefined;
 
@@ -122,29 +119,6 @@ export default function OrderDetailPage() {
       setStatusError(err instanceof ApiError ? err.message : "Could not update the order status.");
     } finally {
       setStatusBusy(false);
-    }
-  }
-
-  async function recordPayment(event: React.FormEvent) {
-    event.preventDefault();
-    if (!order) return;
-    setPaymentError(null);
-    setPaymentSaved(null);
-    const cents = dollarsToCents(amount);
-    if (Number.isNaN(cents) || cents <= 0) {
-      setPaymentError("Enter a valid dollar amount, e.g. 16.50.");
-      return;
-    }
-    setPaymentBusy(true);
-    try {
-      await api.post("/payments", { order_id: order.id, amount: cents });
-      setPaymentSaved("Payment recorded.");
-      setAmount("");
-      await load();
-    } catch (err) {
-      setPaymentError(err instanceof ApiError ? err.message : "Could not record the payment.");
-    } finally {
-      setPaymentBusy(false);
     }
   }
 
@@ -319,32 +293,27 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          {outstanding > 0 ? (
+          {!paymentDisabled ? (
             <Card>
               <CardContent>
-                <h2 className="mb-1 text-lg font-semibold">Record cash payment</h2>
+                <h2 className="mb-1 text-lg font-semibold">Record payment</h2>
                 <p className="mb-4 text-sm text-muted-foreground">
                   Outstanding balance: {formatNzd(outstanding)}
                 </p>
-                <form className="flex items-end gap-3" onSubmit={(e) => void recordPayment(e)}>
-                  <label className="flex flex-col gap-1 text-xs font-medium text-muted-foreground">
-                    Amount (NZD)
-                    <Input
-                      className="h-9 w-32"
-                      inputMode="decimal"
-                      placeholder="e.g. 16.50"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                    />
-                  </label>
-                  <Button type="submit" disabled={paymentBusy}>
-                    {paymentBusy ? "Recording…" : "Record payment"}
-                  </Button>
-                </form>
-                {paymentSaved && (
-                  <p className="mt-3 text-sm text-muted-foreground">{paymentSaved}</p>
-                )}
-                {paymentError && <p className="mt-3 text-sm text-destructive">{paymentError}</p>}
+                <RecordPaymentForm
+                  orderId={order.id}
+                  initialAmount={outstanding > 0 ? (outstanding / 100).toFixed(2) : ""}
+                  onRecorded={() => void load()}
+                />
+              </CardContent>
+            </Card>
+          ) : order?.status === "cancelled" ? (
+            <Card>
+              <CardContent>
+                <h2 className="mb-1 text-lg font-semibold">Record payment</h2>
+                <p className="text-sm text-muted-foreground">
+                  Payments can’t be recorded on a cancelled order.
+                </p>
               </CardContent>
             </Card>
           ) : null}

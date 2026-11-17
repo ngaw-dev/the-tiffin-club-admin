@@ -40,6 +40,10 @@ _Avoid_: Fulfilment (that's pickup vs delivery), order state
 An immutable record of cash collected against an Order, in whole cents. Never edited, refunded, or deleted (ADR 0001).
 _Avoid_: Transaction, refund
 
+**Outstanding Balance**:
+The part of an Order's total not yet covered by Payments: total minus the paid sum. The most a single Payment may record; recording more is rejected.
+_Avoid_: Due, amount owed, remaining balance
+
 **Customer**:
 The person placing orders, identified by email or phone. Found or created at checkout from the submitted contact details.
 _Avoid_: User, account holder, Guest (Guest means a customer without an account)

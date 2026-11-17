@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarClock, LayoutDashboard, Settings, Soup, Users } from "lucide-react";
+import { Banknote, CalendarClock, LayoutDashboard, Settings, Soup, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -23,6 +23,7 @@ const sections = [
   { title: "Dashboard", href: "/", icon: LayoutDashboard },
   { title: "Menu", href: "/menu", icon: Soup },
   { title: "Orders", href: "/orders", icon: CalendarClock },
+  { title: "Payments", href: "/payments", icon: Banknote },
   { title: "Customers", href: "/customers", icon: Users },
   { title: "Settings", href: "/settings", icon: Settings },
 ];
